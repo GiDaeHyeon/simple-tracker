@@ -13,14 +13,14 @@ class MainView(View):
         selects_query = """
             SELECT id, name as name, strftime("%Y-%m-%d", date_time) as date
             FROM tracker_carstatus
-            GROUP BY 2;
+            GROUP BY 3;
         """
         selects = CarStatus.objects.raw(selects_query)
         cars, dates = [], []
         for s in selects:
             cars.append(s.name)
             dates.append(s.date)
-
+        cars = set(list(cars))
         # Map
         name = request.GET.get('car', None)
         date = request.GET.get('date', None)
