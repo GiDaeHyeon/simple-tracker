@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Main Page
+{% endblock %}
+
+{% block content %}
+    <div class="row m-2">
+        <div class="col">
+            <div class="row mb-1">
+                차량
+            </div>
+            <div class="row">
+                <select id="car">
+                    {% for car in cars %}
+                        <option value="{{ car }}">{{ car }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    <div class="col">
+            <div class="row mb-1">
+                일자
+            </div>
+            <div class="row">
+                <select id="date">
+                    {% for date in dates %}
+                        <option value="{{ date }}">{{ date }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+            <div class="row">
+                <button class="btn btn-primary" onclick="search()">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="map" style="width:100%; height:40rem;"></div>
+        <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=641567f59a1a25fb2cddf3847a32549d"></script>
+    <script>
+        var container = document.getElementById('map');
+        var options = {
+            center: new kakao.maps.LatLng(35.166171, 126.808733),
+            level: 7
+        };
+
+        var map = new kakao.maps.Map(container, options);
+        var markers = [];
+        function addMarker(position, time, speed, distance) {
+
+            // 마커를 생성합니다
+            var marker = new kakao.maps.Marker({
+                position: position
+            });
+
+            var iwContent = '<div class="row m-3">' +
+                '<div class="row">' +
+                    '<div class="col font-weight-bold">'+ '{{ name }}' + '</div>' +
+                '</div>' +
+                '<div class="row">' +
+                    '<div class="col font-weight-bold">시각</div>' +
+                    '<div class="col">' + time +  '</div>' +
+                '</div>' +
+                '<div class="row">' +
+                    '<div class="col font-weight-bold">속도</div>' +
+                    '<div class="col">' + speed +  'km/h</div>' +
+                '</div>' +
+                '<div class="row">' +
+                    '<div class="col font-weight-bold">운행거리</div>' +
+                    '<div class="col">' + distance +  'km</div>' +
+                '</div>' +
+            '</div>';
+
+            // 인포윈도우를 생성합니다
+            var infowindow = new kakao.maps.InfoWindow({
+                content : iwContent
+            });
+
+            // 마커에 마우스오버 이벤트를 등록합니다
+            kakao.maps.event.addListener(marker, 'mouseover', function() {
+              // 마커에 마우스오버 이벤트가 발생하면 인포윈도우를 마커위에 표시합니다
+                infowindow.open(map, marker);
+            });
+
+            // 마커에 마우스아웃 이벤트를 등록합니다
+            kakao.maps.event.addListener(marker, 'mouseout', function() {
+                // 마커에 마우스아웃 이벤트가 발생하면 인포윈도우를 제거합니다
+                infowindow.close();
+            });
+
+            // 마커가 지도 위에 표시되도록 설정합니다
+            marker.setMap(map);
+
+            // 생성된 마커를 배열에 추가합니다
+            markers.push(marker);
+        }
+        var linePath = [];
+        {% for m in map %}
+            addMarker(new kakao.maps.LatLng({{ m.x }}, {{ m.y }}), '{{ m.time }}',
+                                            {{ m.speed }}, {{ m.distance }});
+            linePath.push(new kakao.maps.LatLng({{ m.x }}, {{ m.y }}))
+        {% endfor %}
+
+        var polyline = new kakao.maps.Polyline({
+            path: linePath, // 선을 구성하는 좌표배열 입니다
+            strokeWeight: 3, // 선의 두께 입니다
+            strokeColor: '#FFAE00', // 선의 색깔입니다
+            strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+            strokeStyle: 'solid' // 선의 스타일입니다
+        });
+        polyline.setMap(map);
+        
+        function search() {
+            var car_select = document.getElementById("car");
+            var car_selected = car_select.options[car_select.selectedIndex].value;
+            console.log(car_selected)
+            var date = document.getElementById("date").value;
+            location.href = '?date=' + date + '&car=' + car_selected
+        }
+    </script>
+{% endblock %}
