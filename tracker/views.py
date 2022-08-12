@@ -13,7 +13,7 @@ class MainView(View):
         selects_query = """
             SELECT id, name as name, strftime("%Y-%m-%d", date_time) as date
             FROM tracker_carstatus
-            GROUP BY 3;
+            GROUP BY 2, 3;
         """
         selects = CarStatus.objects.raw(selects_query)
         cars, dates = [], []
